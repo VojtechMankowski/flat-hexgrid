@@ -2,6 +2,15 @@
 #include <SDL2/SDL.h>
 #undef main
 
+SDL_Rect createRect(int x, int y, int w, int h) {
+    SDL_Rect rect;
+    rect.x = x;
+    rect.y = y;
+    rect.w = w;
+    rect.h = h;
+    return rect;
+}
+
 const int WIDTH = 800, HEIGHT = 600;
 
 
@@ -20,28 +29,19 @@ int main(int argc, char* argv[]) {
 
     SDL_Renderer * renderer = SDL_CreateRenderer(window, -1, 0);
     SDL_Event event;
-    SDL_Rect rect, rect2;
-    rect.x = 220;
-    rect.y = 330;
-    rect.w = 100;
-    rect.h = 50;
-    
-    const int N = 10;
-    SDL_Rect rects[N];
+    SDL_Rect rect = {0, 0, 50, 50};
 
+    const int N = 5;
+    SDL_Rect rects[N];
     for (int i = 0; i < N; i++) {
-        rect2.x = 0;
-        rect2.y = 0;
-        rect2.w = 100;
-        rect2.h = 50;
+        rects[i] = createRect(0, 0, 100, 50);
     }
-    int rect_count = 0;
+
+    int rect_count = 0, rect_curr = 0;
     bool clicked = false;
 
-    while (true) {
-        SDL_SetRenderDrawColor(renderer, 0, 128, 0, 0);
-        SDL_RenderClear(renderer);
-
+    while (true) {  // Input, Update, Draw
+        // Input
         SDL_GetMouseState(&(rect.x), &(rect.y));
 
         SDL_PollEvent(&event);
@@ -49,15 +49,24 @@ int main(int argc, char* argv[]) {
             break;
         if (SDL_MOUSEBUTTONUP == event.type) {
             if (clicked) {
-                SDL_GetMouseState(&(rect2.x), &(rect2.y));
-                SDL_SetRenderDrawColor(renderer, 64, 64, 0, 0);
-                SDL_RenderDrawRect(renderer, &rect2);
+                SDL_GetMouseState(&(rects[rect_curr].x), &(rects[rect_curr].y));
+                rect_curr++;
+                if (rect_curr > rect_count) rect_count = rect_curr;
+                if (rect_curr == N) {
+                    rect_curr = 0;
+                    rect_count = N;
+                }
+                printf("curr: %d, count: %d\n", rect_curr, rect_count);
             }
             clicked = false;
         }
         if (SDL_MOUSEBUTTONDOWN == event.type)
             clicked = true;
         
+        // Update 
+        SDL_SetRenderDrawColor(renderer, 0, 128, 0, 0);
+        SDL_RenderClear(renderer);
+
         SDL_SetRenderDrawColor(renderer, 128, 0, 64, 0);
         SDL_RenderDrawLine(renderer, 0, 0, rect.x, rect.y);
         SDL_RenderDrawLine(renderer, WIDTH, 0, rect.x, rect.y);
@@ -67,9 +76,12 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 128, 64, 0, 0);
         SDL_RenderDrawRect(renderer, &rect);
         
-        SDL_SetRenderDrawColor(renderer, 64, 64, 0, 0);
-        SDL_RenderFillRect(renderer, &rect2);
+        for (int i=0; i < rect_count; i++) {
+            SDL_SetRenderDrawColor(renderer, 64, 64, 0, 0);
+            SDL_RenderFillRect(renderer, &rects[i]);
+        }
 
+        // Draw
         SDL_RenderPresent(renderer);
 
         SDL_Delay(16);
