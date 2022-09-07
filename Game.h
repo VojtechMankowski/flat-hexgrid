@@ -54,6 +54,10 @@ public:
 
     int loadResources(void)
     {
+
+        SDL_Texture* tex = Game::loadTexture(renderer, "assets//grass_path.png");
+        SDL_DestroyTexture(tex);
+
         rect = createRect(0, 0, 50, 50);
 
         rects = new SDL_Rect[N];
@@ -135,6 +139,14 @@ public:
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
+    }
+
+    static SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* file)
+    {
+        SDL_Surface* tempSurf  = IMG_Load(file);
+        SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, tempSurf);
+        SDL_FreeSurface(tempSurf);
+        return tex;
     }
 
     static SDL_Rect createRect(int x, int y, int w, int h)  //change to static void setRect(Rect&)
