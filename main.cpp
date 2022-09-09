@@ -19,17 +19,18 @@ int main(int argc, char* argv[]) {
     Game game(WIDTH, HEIGHT);
     game.init("Tell Your Tale", WIDTH, HEIGHT);
 
-    game.loadResources(); // initStage
+    game.loadResources();  // initStage
 
-    while (game.running()) {  // Input, Update, Draw
-
+    // Input, Update, Draw
+    while (game.running())
+    {
         frameStart = SDL_GetTicks();
 
         // Input
         game.prepareScene();
         game.handleInput();
         game.update();
-        game.draw();
+        // game.draw();
 
         // Limit FPS
         frameTicks = SDL_GetTicks() - frameStart;
@@ -42,7 +43,9 @@ int main(int argc, char* argv[]) {
         printf("%d ms, ( %.2f FPS)\n", frameTicks, 1000.0f/frameTicks );
     }
 
+    game.unloadResources();
+
     game.quit();
 
-    return EXIT_SUCCESS;
+    return 0;
 }

@@ -1,14 +1,26 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "Entity.h"
+
+
 #define ERR_SDL_INIT 1
 #define ERR_CREATE_WIN 2
 #define ERR_CREATE_REND 3
+#define ERR_LOAD_RES 4
+#define ERR_UNLOAD_RES 5
+
+
+
 
 class Game {
 public:
     Game(int WIDTH, int HEIGHT) : WIDTH(WIDTH), HEIGHT(HEIGHT) {};
     SDL_Renderer* renderer = NULL;
+    SDL_Texture* backgroundTex = NULL;
+    SDL_Texture* playerTex = NULL;
+    Entity* player;
+    Entity* background;
 
 private:
     int WIDTH = 0, HEIGHT = 0;
@@ -17,10 +29,8 @@ private:
     bool isRunning = false;
 
     SDL_Rect rect;
-    SDL_Rect* rects = nullptr;
     bool clicked = false;
-    int rect_count = 0, rect_curr = 0;
-    const int N = 5;
+
 
 public:
     const bool running(void) { return isRunning; }
@@ -34,7 +44,7 @@ public:
             return ERR_SDL_INIT;
         }
         
-        window = SDL_CreateWindow("Flat Hexagon Grid", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_ALLOW_HIGHDPI);
+        window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_ALLOW_HIGHDPI);
         if (window == NULL)
         {
             printf("Couldn't create a window: %s.\n", SDL_GetError());
@@ -54,20 +64,22 @@ public:
 
     int loadResources(void)
     {
+        backgroundTex = Game::loadTexture(renderer, "assets//grass_path.png");
+        playerTex = Game::loadTexture(renderer, "assets//player.png");
+        
+        background = new Entity(backgroundTex, 64, 64);
+        player = new Entity(playerTex, 64, 64);
 
-        SDL_Texture* tex = Game::loadTexture(renderer, "assets//grass_path.png");
-        SDL_DestroyTexture(tex);
+        return 0;
+    }
 
-        rect = createRect(0, 0, 50, 50);
+    int unloadResources(void)
+    {
+        delete background;
+        delete player;
 
-        rects = new SDL_Rect[N];
-        for (int i = 0; i < N; i++)
-        {
-            rects[i] = createRect(0, 0, 100, 50);
-        }
-        rect_count = 0;
-        rect_curr = 0;
-        clicked = false;
+        SDL_DestroyTexture(backgroundTex);
+        SDL_DestroyTexture(playerTex);
 
         return 0;
     }
@@ -76,6 +88,12 @@ public:
     {
         SDL_SetRenderDrawColor(renderer, 0, 128, 0, 0);
         SDL_RenderClear(renderer);
+
+        background->setPos(100, 200);
+        background->draw(renderer);
+        player->draw(renderer);
+
+        SDL_RenderPresent(renderer);
     }
 
     void handleInput(void)
@@ -86,27 +104,6 @@ public:
         {
             if (SDL_QUIT == event.type)
                 isRunning = false;
-
-            if (SDL_MOUSEBUTTONUP == event.type)
-            {
-                if (clicked)
-                {
-                    SDL_GetMouseState(&(rects[rect_curr].x), &(rects[rect_curr].y));
-                    rect_curr++;
-                    if (rect_curr > rect_count)
-                        rect_count = rect_curr;
-                    if (rect_curr == N)
-                    {
-                        rect_curr = 0;
-                        rect_count = N;
-                    }
-                    printf("curr: %d, count: %d\n", rect_curr, rect_count);
-                }
-                clicked = false;
-            }
-
-            if (SDL_MOUSEBUTTONDOWN == event.type)
-                clicked = true;
         }
     }
 
@@ -115,27 +112,14 @@ public:
     void draw(void)
     {
         SDL_SetRenderDrawColor(renderer, 128, 0, 64, 0);
-        SDL_RenderDrawLine(renderer, 0, 0, rect.x, rect.y);
-        SDL_RenderDrawLine(renderer, WIDTH, 0, rect.x, rect.y);
-        SDL_RenderDrawLine(renderer, 0, HEIGHT, rect.x, rect.y);
-        SDL_RenderDrawLine(renderer, WIDTH, HEIGHT, rect.x, rect.y);
 
-        SDL_SetRenderDrawColor(renderer, 128, 64, 0, 0);
-        SDL_RenderDrawRect(renderer, &rect);
+        // SDL_SetRenderDrawColor(renderer, 64, 64, 0, 0);
+        // SDL_RenderFillRect(renderer, &rects[i]);
 
-        for (int i = 0; i < rect_count; i++)
-        {
-            SDL_SetRenderDrawColor(renderer, 64, 64, 0, 0);
-            SDL_RenderFillRect(renderer, &rects[i]);
-        }
-
-        // Draw
         SDL_RenderPresent(renderer);
     }
 
     void quit(void) {
-        delete[] rects;
-
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
@@ -149,15 +133,6 @@ public:
         return tex;
     }
 
-    static SDL_Rect createRect(int x, int y, int w, int h)  //change to static void setRect(Rect&)
-    {
-        SDL_Rect rect;
-        rect.x = x;
-        rect.y = y;
-        rect.w = w;
-        rect.h = h;
-        return rect;
-    }
 };
 
 #endif  // GAME_H
