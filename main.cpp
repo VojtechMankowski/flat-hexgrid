@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+#include <SDL.h>
+#include <SDL_image.h>
 #include "Game.h"
 #undef main
 
 
-const int WIDTH = 800, HEIGHT = 600;
+const int WIDTH = 800, HEIGHT = 640;
 const int FPS = 60;
 const int frameDelay = 1000 / FPS;  // [ms]
 
@@ -28,8 +28,8 @@ int main(int argc, char* argv[]) {
 
         // Input
         game.prepareScene();
-        game.handleInput();
-        game.update();
+        game.handleInput();  // changes entities variables
+        game.update();  // recalculates parameters based on entities variables 
         // game.draw();
 
         // Limit FPS
@@ -38,9 +38,9 @@ int main(int argc, char* argv[]) {
         if (frameDelay > frameTicks) {
             SDL_Delay(frameDelay - frameTicks);
         }
-        
-        frameTicks = SDL_GetTicks() - frameStart;
-        printf("%d ms, ( %.2f FPS)\n", frameTicks, 1000.0f/frameTicks );
+
+        // frameTicks = SDL_GetTicks() - frameStart;
+        // printf("%d ms, ( %.2f FPS)\n", frameTicks, 1000.0f/frameTicks );
     }
 
     game.unloadResources();

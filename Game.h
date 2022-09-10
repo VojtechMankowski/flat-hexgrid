@@ -11,17 +11,7 @@
 #define ERR_UNLOAD_RES 5
 
 
-
-
 class Game {
-public:
-    Game(int WIDTH, int HEIGHT) : WIDTH(WIDTH), HEIGHT(HEIGHT) {};
-    SDL_Renderer* renderer = NULL;
-    SDL_Texture* backgroundTex = NULL;
-    SDL_Texture* playerTex = NULL;
-    Entity* player;
-    Entity* background;
-
 private:
     int WIDTH = 0, HEIGHT = 0;
     SDL_Window* window = NULL;
@@ -31,19 +21,26 @@ private:
     SDL_Rect rect;
     bool clicked = false;
 
-
 public:
+    SDL_Renderer* renderer = NULL;
+    SDL_Texture* backgroundTex = NULL;
+    SDL_Texture* playerTex = NULL;
+    Player* player;
+    Entity* background;
+
+    Game(int WIDTH, int HEIGHT) : WIDTH(WIDTH), HEIGHT(HEIGHT) {};
+
     const bool running(void) { return isRunning; }
 
     int init(const char* title, int width, int height)
     {
         int ret = SDL_Init(SDL_INIT_EVERYTHING);
-        if (ret != 0) 
+        if (ret != 0)
         {
             printf("Couldn't initialize SDL: %s.\n", SDL_GetError());
             return ERR_SDL_INIT;
         }
-        
+
         window = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_ALLOW_HIGHDPI);
         if (window == NULL)
         {
@@ -64,11 +61,11 @@ public:
 
     int loadResources(void)
     {
-        backgroundTex = Game::loadTexture(renderer, "assets//grass_path.png");
-        playerTex = Game::loadTexture(renderer, "assets//player.png");
-        
+        backgroundTex = loadTexture(renderer, "assets//grass_path.png");
+        playerTex = loadTexture(renderer, "assets//player.png");
+
         background = new Entity(backgroundTex, 64, 64);
-        player = new Entity(playerTex, 64, 64);
+        player = new Player(playerTex, 64, 64);
 
         return 0;
     }
@@ -98,16 +95,53 @@ public:
 
     void handleInput(void)
     {
-        SDL_GetMouseState(&(rect.x), &(rect.y));
+        // SDL_GetMouseState(&(rect.x), &(rect.y));
 
         while (SDL_PollEvent(&event))
         {
+            // const Uint8* state = SDL_GetKeyboardState(NULL);
+
             if (SDL_QUIT == event.type)
                 isRunning = false;
+
+            if (SDL_KEYDOWN == event.type && event.key.repeat == 0)
+            {
+
+                if (SDLK_UP == event.key.keysym.sym)
+                    player->vy += -1.0f;
+
+                if (SDLK_DOWN == event.key.keysym.sym)
+                    player->vy += 1.0f;
+
+                if (SDLK_LEFT == event.key.keysym.sym)
+                    player->vx += -1.0f;
+
+                if (SDLK_RIGHT == event.key.keysym.sym)
+                    player->vx += 1.0f;
+            }
+
+            if (SDL_KEYUP == event.type)
+            {
+                if (SDLK_UP == event.key.keysym.sym)
+                    player->vy = 0.0f;
+
+                if (SDLK_DOWN == event.key.keysym.sym)
+                    player->vy = 0.0f;
+
+                if (SDLK_LEFT == event.key.keysym.sym)
+                    player->vx = 0.0f;
+
+                if (SDLK_RIGHT == event.key.keysym.sym)
+                    player->vx = 0.0f;
+            }
         }
     }
 
-    void update(void) {}
+
+    void update(void)
+    {
+        player->update();
+    }
 
     void draw(void)
     {
@@ -119,7 +153,8 @@ public:
         SDL_RenderPresent(renderer);
     }
 
-    void quit(void) {
+    void quit(void)
+    {
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
         SDL_Quit();
@@ -127,7 +162,7 @@ public:
 
     static SDL_Texture* loadTexture(SDL_Renderer* renderer, const char* file)
     {
-        SDL_Surface* tempSurf  = IMG_Load(file);
+        SDL_Surface* tempSurf = IMG_Load(file);
         SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, tempSurf);
         SDL_FreeSurface(tempSurf);
         return tex;
