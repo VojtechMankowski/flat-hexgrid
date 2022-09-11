@@ -23,10 +23,22 @@ void Entity::setPos(int x, int y)
 	dstRect.y = y;
 }
 
-void Entity::readPos(int x, int y)
+void Entity::setSize(int w, int h)
+{
+	dstRect.w = w;
+	dstRect.h = h;
+}
+
+void Entity::sourcePos(int x, int y)
 {
 	srcRect.x = x;
 	srcRect.y = y;
+}
+
+void Entity::sourceSize(int w, int h)
+{
+	srcRect.w = w;
+	srcRect.h = h;
 }
 
 void Entity::draw(SDL_Renderer* renderer)
@@ -34,6 +46,10 @@ void Entity::draw(SDL_Renderer* renderer)
 	SDL_RenderCopy(renderer, tex, &srcRect, &dstRect);
 }
 
+SDL_Texture* Entity::getTexture(void)
+{
+	return tex;
+}
 
 Player::Player(SDL_Texture* tex, int w, int h)
 {

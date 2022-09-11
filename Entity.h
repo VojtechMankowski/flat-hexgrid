@@ -17,8 +17,11 @@ public:
     Entity() = default;
     Entity(SDL_Texture* tex, int w, int h);
     void setPos(int x, int y);
-    void readPos(int x, int y);
+    void setSize(int w, int h);
+    void sourcePos(int x, int y);
+    void sourceSize(int w, int h);
     void draw(SDL_Renderer* renderer);
+    SDL_Texture* getTexture(void);
 };
 
 

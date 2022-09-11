@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <SDL_image.h>
 
+
 const bool Game::running(void)
 { 
 	return isRunning;
@@ -36,36 +37,39 @@ int Game::init(const char* title, int width, int height)
 
 int Game::loadResources(void)
 {
-	backgroundTex = loadTexture(renderer, "assets//grass_path.png");
-	playerTex = loadTexture(renderer, "assets//player.png");
+	SDL_Texture* tmp = NULL;
+	
+	tmp = loadTexture(renderer, "assets//map-tile-v1-tile-map.png");
+	background = new Entity(tmp, 2*568, 2*329);
+	background->sourceSize(568, 329);
 
-	background = new Entity(backgroundTex, 64, 64);
-	player = new Player(playerTex, 64, 64);
+	tmp = loadTexture(renderer, "assets//grass_path.png");
+	tile = new Entity(tmp, 64, 64);
+
+	tmp = loadTexture(renderer, "assets//player.png");
+	player = new Player(tmp, 64, 64);
 
 	return 0;
 }
 
 int Game::unloadResources(void)
 {
+	SDL_DestroyTexture(background->getTexture());
+	SDL_DestroyTexture(tile->getTexture());
+	SDL_DestroyTexture(player->getTexture());
+
 	delete background;
 	delete player;
-
-	SDL_DestroyTexture(backgroundTex);
-	SDL_DestroyTexture(playerTex);
+	delete tile;
 
 	return 0;
 }
 
 void Game::prepareScene(void)
 {
+	// set green background
 	SDL_SetRenderDrawColor(renderer, 0, 128, 0, 0);
 	SDL_RenderClear(renderer);
-
-	background->setPos(100, 200);
-	background->draw(renderer);
-	player->draw(renderer);
-
-	SDL_RenderPresent(renderer);
 }
 
 void Game::handleInput(void)
@@ -119,7 +123,10 @@ void Game::update(void)
 
 void Game::draw(void)
 {
-	SDL_SetRenderDrawColor(renderer, 128, 0, 64, 0);
+	background->draw(renderer);
+	tile->setPos(100, 200);
+	tile->draw(renderer);
+	player->draw(renderer);
 
 	// SDL_SetRenderDrawColor(renderer, 64, 64, 0, 0);
 	// SDL_RenderFillRect(renderer, &rects[i]);
